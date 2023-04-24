@@ -24,6 +24,16 @@ public class Repository<T> {
         this.clazz = clazz;
     }
 
+    public T insert(T object) {
+        this.getCollection().insertOne(object);
+        return object;
+    }
+
+    public T updateOne(T object, Bson filter) {
+        this.getCollection().replaceOne(filter, object);
+        return object;
+    }
+
     @SafeVarargs
     public final void insert(T... objects) {
         this.getCollection().insertMany(List.of(objects));
@@ -35,13 +45,30 @@ public class Repository<T> {
                 .into(new ArrayList<>());
     }
 
+    public List<T> find(Bson filter, int limit) {
+        return this.getCollection()
+                .find(filter)
+                .limit(limit)
+                .into(new ArrayList<>());
+    }
+
+    public T findOne(Bson filter) {
+        return this.getCollection()
+                .find(filter)
+                .first();
+    }
+
     public List<T> findAll() {
         return this.getCollection()
                 .find()
                 .into(new ArrayList<>());
     }
 
-    public void delete(Bson filter) {
+    public void deleteOne(Bson filter) {
+        this.getCollection().deleteOne(filter);
+    }
+
+    public void deleteMany(Bson filter) {
         this.getCollection().deleteMany(filter);
     }
 

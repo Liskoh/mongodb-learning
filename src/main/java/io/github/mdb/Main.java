@@ -1,16 +1,16 @@
 package io.github.mdb;
 
 import com.mongodb.*;
-import com.mongodb.client.model.Filters;
 import io.github.mdb.access.impl.MongoAccess;
 import io.github.mdb.consts.ConstCredentials;
+import io.github.mdb.objects.Biography;
 import io.github.mdb.repositores.impl.UserRepository;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
-import io.github.mdb.objects.User;
+import io.github.mdb.objects.datas.impl.User;
 
-import java.util.List;
+import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) {
@@ -45,10 +45,34 @@ public class Main {
         repository.insert(user, secondUser);
 
         //find user in database
-        final List<User> users = repository.find(Filters.eq("username", "default"));
+        Optional<User> optionalUser = repository.findOneByUsername("default");
 
-        //print users
-        users.forEach(System.out::println);
+        if (optionalUser.isPresent()) {
+            final User findedUser = optionalUser.get();
+            Biography biography = findedUser.getBiography();
+
+            System.out.println("default biography: " + biography);
+
+            //update biography
+            biography.setBiographyName("default biography");
+            biography.setBiographyDescription("description.");
+            biography.getBiographyData().clear();
+            biography.getBiographyData().put("key", "value");
+
+            //update user
+            findedUser.update(repository);
+        }
+
+        //check if biography was updated
+        optionalUser = repository.findOneByUsername("default");
+
+        if (optionalUser.isPresent()) {
+            final User findedUser = optionalUser.get();
+            Biography biography = findedUser.getBiography();
+
+            System.out.println("edited biography: " + biography);
+        }
+
 
         //close connection
         access.close();
